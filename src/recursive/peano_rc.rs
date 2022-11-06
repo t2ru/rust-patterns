@@ -25,17 +25,24 @@ impl Peano {
         Self::new(PeanoInner::S(self.clone()))
     }
 
-    pub fn count(&self) -> i32 {
+    pub fn dec(&self) -> Option<Self> {
         match self.inner() {
-            PeanoInner::O => 0,
-            PeanoInner::S(x) => x.count() + 1,
+            PeanoInner::O => None,
+            PeanoInner::S(x) => Some(x.clone()),
+        }
+    }
+
+    pub fn count(&self) -> i32 {
+        match self.dec() {
+            None => 0,
+            Some(x) => x.count() + 1,
         }
     }
 
     pub fn add(&self, other: &Self) -> Self {
-        match self.inner() {
-            PeanoInner::O => other.clone(),
-            PeanoInner::S(x) => x.add(&other.cons()),
+        match self.dec() {
+            None => other.clone(),
+            Some(x) => x.add(&other.cons()),
         }
     }
 }
