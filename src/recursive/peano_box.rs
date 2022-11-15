@@ -39,9 +39,9 @@ impl Peano {
     }
 
     pub fn add(&self, other: &Self) -> Self {
-        match self.dec() {
-            None => other.clone(),
-            Some(x) => x.add(&other.cons()),
+        match other.dec() {
+            None => self.clone(),
+            Some(x) => self.cons().add(&x),
         }
     }
 }

@@ -25,10 +25,10 @@ impl Peano {
         Self::new(PeanoInner::S(self.clone()))
     }
 
-    pub fn dec(&self) -> Option<Self> {
+    pub fn dec(&self) -> Option<&Self> {
         match self.inner() {
             PeanoInner::O => None,
-            PeanoInner::S(x) => Some(x.clone()),
+            PeanoInner::S(x) => Some(x),
         }
     }
 
@@ -40,9 +40,17 @@ impl Peano {
     }
 
     pub fn add(&self, other: &Self) -> Self {
-        match self.dec() {
-            None => other.clone(),
-            Some(x) => x.add(&other.cons()),
+        match other.dec() {
+            None => self.clone(),
+            Some(x) => self.cons().add(x),
+        }
+    }
+
+    pub fn sub(&self, other: &Self) -> Option<&Self> {
+        match (self.dec(), other.dec()) {
+            (_, None) => Some(self),
+            (None, _) => None,
+            (Some(x), Some(y)) => x.sub(y),
         }
     }
 }
@@ -52,11 +60,28 @@ mod tests {
     use super::Peano;
 
     #[test]
-    fn test() {
+    fn test_add() {
+        let zero = Peano::zero();
         let three = Peano::zero().cons().cons().cons();
         let five = Peano::zero().cons().cons().cons().cons().cons();
-        assert_eq!(three.count(), 3);
-        assert_eq!(five.count(), 5);
+        assert_eq!(zero.add(&zero).count(), 0);
+        assert_eq!(zero.add(&three).count(), 3);
+        assert_eq!(three.add(&zero).count(), 3);
         assert_eq!(three.add(&five).count(), 8);
+        assert_eq!(five.add(&three).count(), 8);
+    }
+
+    #[test]
+    fn test_sub() {
+        let zero = Peano::zero();
+        let three = Peano::zero().cons().cons().cons();
+        let five = Peano::zero().cons().cons().cons().cons().cons();
+        assert_eq!(zero.sub(&zero).map(|x| x.count()), Some(0));
+        assert_eq!(three.sub(&three).map(|x| x.count()), Some(0));
+        assert_eq!(five.sub(&five).map(|x| x.count()), Some(0));
+        assert_eq!(zero.sub(&three).map(|x| x.count()), None);
+        assert_eq!(three.sub(&zero).map(|x| x.count()), Some(3));
+        assert_eq!(five.sub(&three).map(|x| x.count()), Some(2));
+        assert_eq!(three.sub(&five).map(|x| x.count()), None);
     }
 }
