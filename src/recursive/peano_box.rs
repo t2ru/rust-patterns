@@ -13,7 +13,7 @@ impl Peano {
     }
 
     fn inner(&self) -> &PeanoInner {
-        &*self.0
+        &self.0
     }
 
     pub fn zero() -> Self {

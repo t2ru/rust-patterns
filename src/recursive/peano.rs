@@ -6,7 +6,7 @@ pub enum PeanoMatcher<Peano> {
 
 use PeanoMatcher::{O, S};
 
-trait Peano where Self: Clone {
+trait Peano: Clone {
     fn new(inner: PeanoMatcher<Self>) -> Self;
     fn matcher(&self) -> &PeanoMatcher<Self>;
 
@@ -41,45 +41,29 @@ trait Peano where Self: Clone {
     }
 }
 
-
-use std::rc::Rc;
-
-#[derive(Clone)]
-pub struct PeanoRc(Rc<PeanoMatcher<Self>>);
-
-impl Peano for PeanoRc {
-    fn new(inner: PeanoMatcher<Self>) -> Self {
-        Self(Rc::new(inner))
-    }
-
-    fn matcher(&self) -> &PeanoMatcher<Self> {
-        &*self.0
-    }
-}
-
-
-#[derive(Clone)]
-pub struct PeanoBox(Box<PeanoMatcher<Self>>);
-
-impl Peano for PeanoBox {
-    fn new(inner: PeanoMatcher<Self>) -> Self {
-        Self(Box::new(inner))
-    }
-
-    fn matcher(&self) -> &PeanoMatcher<Self> {
-        &*self.0
-    }
-}
-
 #[cfg(test)]
-mod tests {
-    use super::{Peano, PeanoRc, PeanoBox};
+mod rc_tests {
+    use super::{Peano, PeanoMatcher};
+    use std::rc::Rc;
+
+    #[derive(Clone)]
+    pub struct RcPeano(Rc<PeanoMatcher<Self>>);
+
+    impl Peano for RcPeano {
+        fn new(inner: PeanoMatcher<Self>) -> Self {
+            Self(Rc::new(inner))
+        }
+
+        fn matcher(&self) -> &PeanoMatcher<Self> {
+            &self.0
+        }
+    }
 
     #[test]
     fn test_rc_add() {
-        let zero = PeanoRc::zero();
-        let three = PeanoRc::zero().cons().cons().cons();
-        let five = PeanoRc::zero().cons().cons().cons().cons().cons();
+        let zero = RcPeano::zero();
+        let three = RcPeano::zero().cons().cons().cons();
+        let five = RcPeano::zero().cons().cons().cons().cons().cons();
         assert_eq!(zero.add(&zero).count(), 0);
         assert_eq!(zero.add(&three).count(), 3);
         assert_eq!(three.add(&zero).count(), 3);
@@ -89,9 +73,9 @@ mod tests {
 
     #[test]
     fn test_rc_sub() {
-        let zero = PeanoRc::zero();
-        let three = PeanoRc::zero().cons().cons().cons();
-        let five = PeanoRc::zero().cons().cons().cons().cons().cons();
+        let zero = RcPeano::zero();
+        let three = RcPeano::zero().cons().cons().cons();
+        let five = RcPeano::zero().cons().cons().cons().cons().cons();
         assert_eq!(zero.sub(&zero).map(|x| x.count()), Some(0));
         assert_eq!(three.sub(&three).map(|x| x.count()), Some(0));
         assert_eq!(five.sub(&five).map(|x| x.count()), Some(0));
@@ -100,12 +84,30 @@ mod tests {
         assert_eq!(five.sub(&three).map(|x| x.count()), Some(2));
         assert_eq!(three.sub(&five).map(|x| x.count()), None);
     }
+}
+
+#[cfg(test)]
+mod box_tests {
+    use super::{Peano, PeanoMatcher};
+
+    #[derive(Clone)]
+    pub struct BoxPeano(Box<PeanoMatcher<Self>>);
+
+    impl Peano for BoxPeano {
+        fn new(inner: PeanoMatcher<Self>) -> Self {
+            Self(Box::new(inner))
+        }
+
+        fn matcher(&self) -> &PeanoMatcher<Self> {
+            &self.0
+        }
+    }
 
     #[test]
     fn test_box_add() {
-        let zero = PeanoBox::zero();
-        let three = PeanoBox::zero().cons().cons().cons();
-        let five = PeanoBox::zero().cons().cons().cons().cons().cons();
+        let zero = BoxPeano::zero();
+        let three = BoxPeano::zero().cons().cons().cons();
+        let five = BoxPeano::zero().cons().cons().cons().cons().cons();
         assert_eq!(zero.add(&zero).count(), 0);
         assert_eq!(zero.add(&three).count(), 3);
         assert_eq!(three.add(&zero).count(), 3);
@@ -115,9 +117,9 @@ mod tests {
 
     #[test]
     fn test_box_sub() {
-        let zero = PeanoBox::zero();
-        let three = PeanoBox::zero().cons().cons().cons();
-        let five = PeanoBox::zero().cons().cons().cons().cons().cons();
+        let zero = BoxPeano::zero();
+        let three = BoxPeano::zero().cons().cons().cons();
+        let five = BoxPeano::zero().cons().cons().cons().cons().cons();
         assert_eq!(zero.sub(&zero).map(|x| x.count()), Some(0));
         assert_eq!(three.sub(&three).map(|x| x.count()), Some(0));
         assert_eq!(five.sub(&five).map(|x| x.count()), Some(0));
