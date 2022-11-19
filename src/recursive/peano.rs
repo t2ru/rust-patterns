@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum PeanoMatcher<Peano> {
     O,
     S(Peano),
