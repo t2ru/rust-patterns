@@ -1,2 +1,2 @@
-pub mod recursive;
 pub mod funcdefs;
+pub mod recursive;
